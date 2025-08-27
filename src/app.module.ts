@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ChooseBatteriesModule } from './choose-batteries/choose-batteries.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { MailerModule } from './mailer/mailer.module';
+import { ContactUsModule } from './contact-us/contact-us.module';
 import AppConfig from './config/app-config';
 
 @Module({
@@ -27,6 +28,7 @@ import AppConfig from './config/app-config';
     }),
     AppointmentModule,
     MailerModule,
+    ContactUsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
