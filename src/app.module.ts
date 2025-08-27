@@ -15,6 +15,8 @@ import AppConfig from './config/app-config';
     ConfigModule.forRoot({
       load: [AppConfig],
       isGlobal: true,
+      envFilePath:
+        process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
