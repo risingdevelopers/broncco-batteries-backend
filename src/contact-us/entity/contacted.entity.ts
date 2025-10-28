@@ -5,9 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity('contacted')
+@Index(['email'])
+@Index(['createdAt'])
 export class Contacted {
   @PrimaryGeneratedColumn()
   id: number;
@@ -18,7 +21,7 @@ export class Contacted {
   @Column({ type: 'varchar', length: 255 })
   email: string;
 
-  @Column({ type: 'varchar', length: 15 })
+  @Column({ type: 'varchar', length: 20 })
   phone: string;
 
   @Column({ type: 'text' })
