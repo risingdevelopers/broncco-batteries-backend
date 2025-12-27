@@ -20,11 +20,6 @@ export default (): Record<string, any> => ({
       pass: process.env.MAIL_PASSWORD,
     },
     from: process.env.MAIL_FROM,
-  },
-  contactUs: {
-    notificationEmail: process.env.CONTACT_US_NOTIFICATION_EMAIL || process.env.MAIL_FROM,
-    messageType: 'Message',
-    successMessage: 'Contact message sent successfully',
-    errorMessage: 'Failed to save contact message.',
+    to: process.env.MAIL_TO,
   },
 });

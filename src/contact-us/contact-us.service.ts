@@ -20,19 +20,11 @@ export class ContactUsService {
 
     try {
       const savedContact = await this.contactedRepository.save(contactEntity);
-      const emailTo = this.configService.get('contactUs.notificationEmail');
-      const messageType = this.configService.get('contactUs.messageType');
-      await this.emailService.sendEmail(
-        emailTo,
-        savedContact,
-        messageType,
-      );
-      const successMessage = this.configService.get('contactUs.successMessage');
-      return { success: true, message: successMessage };
+      const mailTo: string = this.configService.get('mail.to');
+      await this.emailService.sendEmail(mailTo, savedContact, 'Message');
+      return { success: true, message: 'Message sent successfully.' };
     } catch (error) {
-      console.log(error);
-      const errorMessage = this.configService.get('contactUs.errorMessage');
-      throw new BadRequestException(errorMessage);
+      throw new BadRequestException(error);
     }
   }
 }

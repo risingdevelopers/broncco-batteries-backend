@@ -8,6 +8,7 @@ import { Cities } from './entity/cities.entity';
 import { CarColor } from './entity/carColor.entity';
 import { Quote } from './entity/quote.entity';
 import { QuoteDto } from './dto/quote.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppointmentService {
@@ -21,6 +22,7 @@ export class AppointmentService {
     @InjectRepository(CarColor)
     private readonly carColorRepository: Repository<CarColor>,
     private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async saveAppointment(appointment: CreateAppointmentDto) {
@@ -29,10 +31,8 @@ export class AppointmentService {
     try {
       const savedAppointment =
         await this.appointmentRepository.save(appointmentEntity);
-      await this.emailService.sendEmail(
-        'raisenx24@gmail.com',
-        savedAppointment,
-      );
+      const mailTo: string = this.configService.get('mail.to');
+      await this.emailService.sendEmail(mailTo, savedAppointment);
       return savedAppointment;
     } catch (error: any) {
       console.log(error);
@@ -44,11 +44,8 @@ export class AppointmentService {
     const quoteEntity = this.quoteRepository.create(quote);
     try {
       const savedQuote = await this.quoteRepository.save(quoteEntity);
-      await this.emailService.sendEmail(
-        'raisenx24@gmail.com',
-        savedQuote,
-        'Quote',
-      );
+      const mailTo: string = this.configService.get('mail.to');
+      await this.emailService.sendEmail(mailTo, savedQuote, 'Quote');
       return savedQuote;
     } catch (error: any) {
       console.log(error);
