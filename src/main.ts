@@ -14,9 +14,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
       origin: [
-        'https://d30og0pzau9jyg.cloudfront.net',
-        'https://broncobatteries.com.au',
         'https://broncobattery.com.au',
+        'https://www.broncobattery.com.au',
         'http://localhost:4200'
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
