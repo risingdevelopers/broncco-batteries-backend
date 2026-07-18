@@ -11,6 +11,8 @@ export default (): Record<string, any> => ({
     synchronize: process.env.DATABASE_SYNCHRONIZE === 'true',
   },
   mail: {
+    // Outbound mail is off until a deliverable sender domain is settled.
+    enabled: process.env.MAIL_ENABLED !== 'false',
     host: process.env.MAIL_HOST,
     port: parseInt(process.env.MAIL_PORT, 10) || 587,
     secure: process.env.MAIL_SECURE === 'true',

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Contacted } from './entity/contacted.entity';
@@ -8,6 +8,8 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ContactUsService {
+  private readonly logger = new Logger(ContactUsService.name);
+
   constructor(
     @InjectRepository(Contacted)
     private readonly contactedRepository: Repository<Contacted>,
@@ -18,13 +20,26 @@ export class ContactUsService {
   async create(contactData: ContactUsDto) {
     const contactEntity = this.contactedRepository.create(contactData);
 
+    let savedContact: Contacted;
     try {
-      const savedContact = await this.contactedRepository.save(contactEntity);
+      savedContact = await this.contactedRepository.save(contactEntity);
+    } catch (error) {
+      this.logger.error('Failed to save contact message', error?.stack ?? error);
+      throw new BadRequestException('Failed to save message.');
+    }
+
+    // The message is stored; a notification failure must not be reported as a
+    // failed submission or the sender will retry and duplicate it.
+    try {
       const mailTo: string = this.configService.get('mail.to');
       await this.emailService.sendEmail(mailTo, savedContact, 'Message');
-      return { success: true, message: 'Message sent successfully.' };
     } catch (error) {
-      throw new BadRequestException(error);
+      this.logger.error(
+        `Contact message ${savedContact.id} saved but the notification email failed`,
+        error?.stack ?? error,
+      );
     }
+
+    return { success: true, message: 'Message sent successfully.' };
   }
 }

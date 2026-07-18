@@ -1,16 +1,28 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class EmailService {
-  constructor(private readonly mailerService: MailerService) {}
+  private readonly logger = new Logger(EmailService.name);
+
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async sendEmail(
     email: string,
     appointment: { [key: string]: any },
     type: 'Quote' | 'Appointment' | 'Message' = 'Appointment',
   ) {
-    console.log(email, appointment);
+    if (this.configService.get('mail.enabled') === false) {
+      this.logger.warn(
+        `Mail disabled (MAIL_ENABLED=false); skipping ${type} notification to ${email}`,
+      );
+      return null;
+    }
+
     try {
       // Create HTML table from appointment details
       const tableRows = Object.entries(appointment)
