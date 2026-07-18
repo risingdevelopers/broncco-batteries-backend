@@ -26,6 +26,10 @@ async function bootstrap() {
     },
   });
 
+  // All routes are served under /api so a reverse proxy can split
+  // API traffic from SSR traffic on a single origin.
+  app.setGlobalPrefix('api');
+
   // Apply Helmet with enhanced security settings
   app.use(
     helmet({

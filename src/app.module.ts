@@ -26,7 +26,7 @@ import AppConfig from './config/app-config';
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: process.env.DATABASE_SYNCHRONIZE === 'true',
     }),
     AppointmentModule,
     MailerModule,
