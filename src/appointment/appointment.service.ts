@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './entity/appointment.entity';
 import { Repository } from 'typeorm';
@@ -12,6 +12,8 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppointmentService {
+  private readonly logger = new Logger(AppointmentService.name);
+
   constructor(
     @InjectRepository(Appointment)
     private readonly appointmentRepository: Repository<Appointment>,
@@ -28,29 +30,52 @@ export class AppointmentService {
   async saveAppointment(appointment: CreateAppointmentDto) {
     const appointmentEntity = this.appointmentRepository.create(appointment);
 
+    let savedAppointment: Appointment;
     try {
-      const savedAppointment =
-        await this.appointmentRepository.save(appointmentEntity);
-      const mailTo: string = this.configService.get('mail.to');
-      await this.emailService.sendEmail(mailTo, savedAppointment);
-      return savedAppointment;
+      savedAppointment = await this.appointmentRepository.save(appointmentEntity);
     } catch (error: any) {
-      console.log(error);
+      this.logger.error('Failed to save appointment', error?.stack ?? error);
       throw new BadRequestException('Failed to save appointment.');
     }
+
+    // The booking is already persisted, so a notification failure must not be
+    // reported to the caller as a failed booking - that causes duplicate
+    // submissions. Log loudly instead.
+    try {
+      const mailTo: string = this.configService.get('mail.to');
+      await this.emailService.sendEmail(mailTo, savedAppointment);
+    } catch (error: any) {
+      this.logger.error(
+        `Appointment ${savedAppointment.id} saved but the notification email failed`,
+        error?.stack ?? error,
+      );
+    }
+
+    return savedAppointment;
   }
 
   async saveQuote(quote: QuoteDto) {
     const quoteEntity = this.quoteRepository.create(quote);
+
+    let savedQuote: Quote;
     try {
-      const savedQuote = await this.quoteRepository.save(quoteEntity);
-      const mailTo: string = this.configService.get('mail.to');
-      await this.emailService.sendEmail(mailTo, savedQuote, 'Quote');
-      return savedQuote;
+      savedQuote = await this.quoteRepository.save(quoteEntity);
     } catch (error: any) {
-      console.log(error);
+      this.logger.error('Failed to save quote', error?.stack ?? error);
       throw new BadRequestException('Failed to save quote.');
     }
+
+    try {
+      const mailTo: string = this.configService.get('mail.to');
+      await this.emailService.sendEmail(mailTo, savedQuote, 'Quote');
+    } catch (error: any) {
+      this.logger.error(
+        `Quote ${savedQuote.id} saved but the notification email failed`,
+        error?.stack ?? error,
+      );
+    }
+
+    return savedQuote;
   }
 
   async getCarColors() {
